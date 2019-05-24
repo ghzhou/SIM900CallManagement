@@ -3,59 +3,73 @@ package com.zhoujie.sms.data;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.logging.Logger;
 
 public class ShortMessage {
 
 	private final static Logger logger = Logger.getLogger(ShortMessage.class.getName());
+	private static Map<String, ShortMessage> messagesHolder = new HashMap<>();
+	
+	private String sender;
+	private String timeOfReceive;
+	private Map<Integer, String> segments;
 
-	String sender;
-	String timeOfReceive;
-	String body;
-	Map<Integer, String> segments = new HashMap<>();
-
-	private static String formatTimestamp(String ts) {
-		StringBuilder sb = new StringBuilder(ts.length() + 3);
-		sb.append(ts.substring(0, 6));
-		sb.append(' ');
-		sb.append(ts.substring(6, 8));
-		sb.append(':');
-		sb.append(ts.substring(8, 10));
-		sb.append(':');
-		sb.append(ts.substring(10, 12));
-		sb.append('.');
-		sb.append(ts.substring(12));
-		return sb.toString();
+	
+	private ShortMessage(String sender, String timeOfReceive) {
+		this.sender = sender;
+		this.timeOfReceive = timeOfReceive;
+		segments = new HashMap<>();
 	}
 
-	private static String decode(String content) {
-		int length = content.length();
-		byte[] buffer = new byte[length / 2];
-		for (int i = 0; i < length; i += 2) {
-			buffer[i >> 1] = (byte) Integer.parseInt(content.substring(i, i + 2), 16);
-		}
-		try {
-			return new String(buffer, "UTF-16BE");
-		} catch (UnsupportedEncodingException e) {
-			logger.severe(e.toString());
-			return null;
-		}
+	public String getSender() {
+		return sender;
 	}
 
-	private static String reverseBytes(String data) {
-		StringBuilder sb = new StringBuilder(data.length());
-		for (int i = 0; i < data.length() - 2; i += 2) {
-			sb.append(data.charAt(i + 1));
-			sb.append(data.charAt(i));
-		}
-		sb.append(data.charAt(data.length() - 1));
-		if ('F' != data.charAt(data.length() - 2)) {
-			sb.append(data.charAt(data.length() - 2));
-		}
-		return sb.toString();
+	public String getTimeOfReceive() {
+		return timeOfReceive;
 	}
 
-	public static boolean parsePDU(ShortMessage sm, String pdu, int length) {
+	public String getBody() {
+		return segments.keySet().stream().sorted()
+				.map(key -> segments.get(key))
+				.reduce((t, u)-> t + u)
+				.get();
+	}
+
+	public void addSegment(int index, String segment) {
+		segments.put(index, segment);
+	}
+
+	private boolean isAllSegmentsReady(int total) {
+		return segments.size() == total;
+	}
+	
+	private static Optional<ShortMessage> assembleMessage(String sender, String segment, String timestamp, int index, int total) {
+		if (total == 1) {
+			ShortMessage message = new ShortMessage(sender, timestamp);
+			message.addSegment(1, segment);
+			return Optional.of(message);
+		}
+		String key = sender + timestamp + total;
+		ShortMessage message = messagesHolder.get(key);
+		if(null == message) {
+			message = new ShortMessage(sender, timestamp);
+			message.addSegment(index, segment);
+			messagesHolder.put(key, message);
+			return Optional.empty();
+		}
+		message.addSegment(index, segment);
+		if (message.isAllSegmentsReady(total)) {
+			messagesHolder.remove(key);
+			return Optional.of(message);
+		}
+		return Optional.empty();
+	}
+
+
+	public static Optional<ShortMessage> parsePDU(String pdu, int length) {
+		logger.info("Start parsing a PDU");
 		int currentIndex = 0;
 		int smscLength = Integer.parseInt(pdu.substring(currentIndex, currentIndex + 2), 16);
 		currentIndex += 2;
@@ -116,55 +130,58 @@ public class ShortMessage {
 		String content = decode(pdu.substring(currentIndex));
 		logger.info("msgcontent:" + content);
 		
-		sm.setSender(oaNumber);
-		sm.setTimeOfReceive(timestamp);
+		int index=1;
+		int total=1;
 		if (null!=UDH && (UDH.startsWith("00") || UDH.startsWith("08"))) {//IEI:00 or 08 means concat msg
 			int udh = Integer.parseInt(UDH.substring(UDH.length() - 4, UDH.length()), 16);
-			int total = (udh & 255<<8)>>8;
-			int index = udh & 255;
+			total = (udh & 255<<8)>>8;
+			index = udh & 255;
 			logger.info("Index/Total = " + index + "/" + total);
-			return total == sm.addSegment(index, content);
-		} 
-		sm.addSegment(0, content);
-		return true; // only 1 segment, no more segment to come
+		}
+		logger.info("End parsing a PDU");
+		return assembleMessage(oaNumber, content, timestamp, index, total);
 	}
 
-	public ShortMessage(String sender, String timeOfReceive) {
-		this.sender = sender;
-		this.timeOfReceive = timeOfReceive;
-		this.body = "";
+
+	private static String formatTimestamp(String ts) {
+		StringBuilder sb = new StringBuilder(ts.length() + 3);
+		sb.append(ts.substring(0, 6));
+		sb.append(' ');
+		sb.append(ts.substring(6, 8));
+		sb.append(':');
+		sb.append(ts.substring(8, 10));
+		sb.append(':');
+		sb.append(ts.substring(10, 12));
+		sb.append('.');
+		sb.append(ts.substring(12));
+		return sb.toString();
 	}
 
-	public ShortMessage() {
-		this("", "");
-	}
-	public String getSender() {
-		return sender;
-	}
-
-	public void setSender(String sender) {
-		this.sender = sender;
-	}
-
-	public String getTimeOfReceive() {
-		return timeOfReceive;
-	}
-
-	public void setTimeOfReceive(String timeOfReceive) {
-		this.timeOfReceive = timeOfReceive;
+	private static String decode(String content) {
+		int length = content.length();
+		byte[] buffer = new byte[length / 2];
+		for (int i = 0; i < length; i += 2) {
+			buffer[i >> 1] = (byte) Integer.parseInt(content.substring(i, i + 2), 16);
+		}
+		try {
+			return new String(buffer, "UTF-16BE");
+		} catch (UnsupportedEncodingException e) {
+			logger.severe(e.toString());
+			return null;
+		}
 	}
 
-	public String getBody() {
-		return segments.entrySet().stream().
-				sorted((entry1, entry2) -> entry1.getKey() - entry2.getKey())
-				.map((entry) ->entry.getValue())
-				.reduce((t, u)-> t + u)
-				.get();
+	private static String reverseBytes(String data) {
+		StringBuilder sb = new StringBuilder(data.length());
+		for (int i = 0; i < data.length() - 2; i += 2) {
+			sb.append(data.charAt(i + 1));
+			sb.append(data.charAt(i));
+		}
+		sb.append(data.charAt(data.length() - 1));
+		if ('F' != data.charAt(data.length() - 2)) {
+			sb.append(data.charAt(data.length() - 2));
+		}
+		return sb.toString();
 	}
 
-	public int addSegment(int index, String segment) {
-		segments.put(index, segment);
-		return segments.size();
-	}
-	
 }

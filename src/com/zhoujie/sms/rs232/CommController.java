@@ -17,7 +17,7 @@ import com.zhoujie.sms.mail.EmailServer;
 public class CommController implements DataAvailableListener {
 
 	private enum STATE {
-		IDLE, REQUEST_SENT
+		IDLE, AWAITING_RESPONSE
 	};
 
 	private final static Logger logger = Logger.getLogger(CommController.class.getName());
@@ -80,15 +80,15 @@ public class CommController implements DataAvailableListener {
 
 	public void sendAT(ATCommand command) throws IOException, InterruptedException {
 		synchronized (lock) {
-			if (state == STATE.REQUEST_SENT) {
+			if (state == STATE.AWAITING_RESPONSE) {
 				logger.info("*******Waiting for previous command");
 				lock.wait();
 				logger.info("*******Previous command finished");
 			}
 			logger.info("SendAT:" + Util.toHex(command.getCommand()));
 			commInterface.sendAT(command);
-			this.commandQueue.add(command);
-			state = STATE.REQUEST_SENT;
+			commandQueue.add(command);
+			state = STATE.AWAITING_RESPONSE;
 		}
 	}
 
@@ -117,7 +117,7 @@ public class CommController implements DataAvailableListener {
 
 	private void handleData(String data) throws UnsupportedEncodingException {
 		buffer.append(data);
-		if (state == STATE.REQUEST_SENT) {
+		if (state == STATE.AWAITING_RESPONSE) {
 			// ERROR present
 			int errorIndex = searchForStringBefore0D0A("ERROR");
 			if (errorIndex != -1) {
@@ -144,7 +144,6 @@ public class CommController implements DataAvailableListener {
 			}
 		} else {
 			// we are idle, data available means a notification
-			// logger.info("Notification:" + toHex(readBuffer, numBytes));
 			int l = searchForStringBefore0D0A("");
 			if (l != -1) {
 				final String copy = buffer.substring(0, l);
@@ -156,7 +155,7 @@ public class CommController implements DataAvailableListener {
 						}
 					}).start();
 				}
-				buffer.delete(0, l+2);;
+				buffer.delete(0, l+2);
 			}
 		}
 	}

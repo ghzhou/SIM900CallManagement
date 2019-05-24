@@ -25,8 +25,8 @@ public class Util {
 				hexPart.append(map[v / 16]);
 				hexPart.append(map[v % 16]);
 			}
-			stringPart.append("---END OF STRING");
-			hexPart.append("---END OF HEX");
+			stringPart.append("<END>");
+			hexPart.append("<END>");
 			stringPart.append(hexPart);
 			return stringPart.toString();
 		} catch (UnsupportedEncodingException e) {

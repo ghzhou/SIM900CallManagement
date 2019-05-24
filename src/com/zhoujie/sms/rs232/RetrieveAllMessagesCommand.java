@@ -1,5 +1,6 @@
 package com.zhoujie.sms.rs232;
 
+import java.util.Optional;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -10,11 +11,9 @@ import com.zhoujie.sms.mail.EmailServer;
 public class RetrieveAllMessagesCommand extends BaseATCommand {
 	
 	private final static Logger logger = Logger.getLogger(RetrieveAllMessagesCommand.class.getName());
-	private ShortMessage sm;
 
 	public RetrieveAllMessagesCommand() {
 		super("AT+CMGL=4");
-		sm = new ShortMessage();
 	}
 
 	@Override
@@ -29,7 +28,9 @@ public class RetrieveAllMessagesCommand extends BaseATCommand {
 				logger.info("Message Len:"+m.group(1));
 				logger.info("Message payload:"+m.group(2));
 				int msgLength=Integer.parseInt(m.group(1));
-				if (ShortMessage.parsePDU(sm, m.group(2),msgLength)) {
+				Optional<ShortMessage> messageOption = ShortMessage.parsePDU(m.group(2),msgLength);
+				if (messageOption.isPresent()) {
+					ShortMessage sm = messageOption.get();
 					sb.append("Sender:");
 					sb.append(sm.getSender());
 					sb.append("\n");
@@ -42,7 +43,6 @@ public class RetrieveAllMessagesCommand extends BaseATCommand {
 					sb.append("\n");
 					sb.append("\n");
 					numOfMsgs++;
-					sm = new ShortMessage();
 				};
 			}
 			else{

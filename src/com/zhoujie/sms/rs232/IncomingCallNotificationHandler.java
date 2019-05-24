@@ -22,7 +22,7 @@ import org.apache.http.util.EntityUtils;
 
 import com.zhoujie.sms.mail.EmailServer;
 
-public class IncomingCallNotificationHandler extends BaseNotificationHandler {
+public class IncomingCallNotificationHandler implements NotificationHandler {
 
 	static class PhoneNumberInfo {
 		public String tag;
@@ -141,7 +141,7 @@ public class IncomingCallNotificationHandler extends BaseNotificationHandler {
 //				}
 				try {
 				    HttpEntity entity1 = response1.getEntity();
-				    String result = EntityUtils.toString(entity1);
+				    String result = EntityUtils.toString(entity1, "UTF8");
 				    //System.out.println(result);
 				    
 				    /* sample data
@@ -267,9 +267,9 @@ define("", ["vr"], function(vr) {
 
 	public static void main(String[] args) {
 
-//		new IncomingCallNotificationHandler().getPhoneNumberInfo1("15300918759");
-//		new IncomingCallNotificationHandler().getPhoneNumberInfo1("02161961691");
-//		new IncomingCallNotificationHandler().getPhoneNumberInfo1("13701832975");
+		new IncomingCallNotificationHandler().getPhoneNumberInfo1("15300918759");
+		new IncomingCallNotificationHandler().getPhoneNumberInfo1("02161961691");
+		new IncomingCallNotificationHandler().getPhoneNumberInfo1("13701832975");
 		new IncomingCallNotificationHandler().getPhoneNumberInfo1("02151374173");
 	}
 
