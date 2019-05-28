@@ -10,6 +10,8 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.TreeMap;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.pi4j.system.NetworkInfo;
 import com.zhoujie.sms.mail.EmailServer;
@@ -47,7 +49,7 @@ public class CommController implements DataAvailableListener {
 	private Queue<ATCommand> commandQueue = new LinkedList<ATCommand>();
 	private Object lock = new Object();
 	private StringBuilder buffer = new StringBuilder();
-	private Map<Integer, NotificationHandler> notificationHandlers = new TreeMap<Integer, NotificationHandler>();
+	private Map<String, NotificationHandler> notificationHandlers = new TreeMap<String, NotificationHandler>();
 
 
 	private CommController() {
@@ -67,11 +69,11 @@ public class CommController implements DataAvailableListener {
 		this.commInterface = commInterface;
 	}
 
-	public void registerNotificationHandler(int priority, NotificationHandler handler) {
-		if (notificationHandlers.containsKey(priority)) {
+	public void registerNotificationHandler(String pattern, NotificationHandler handler) {
+		if (notificationHandlers.containsKey(pattern)) {
 			throw new RuntimeException("Priority conflicted!");
 		}
-		notificationHandlers.put(priority, handler);
+		notificationHandlers.put(pattern, handler);
 	}
 
 	public void initializeComm(String portName) {
@@ -148,13 +150,13 @@ public class CommController implements DataAvailableListener {
 			if (l != -1) {
 				final String copy = buffer.substring(0, l);
 				logger.info("Notification buffer:" + Util.toHex(buffer.substring(0, l)));
-				for (final NotificationHandler handler : notificationHandlers.values()) {
-					(new Thread() {
-						public void run() {
-							handler.handle(copy);
-						}
-					}).start();
-				}
+				notificationHandlers.entrySet().forEach(entry -> {
+					Matcher m = Pattern.compile(entry.getKey()).matcher(copy);
+					if (m.find()) {
+						// the handler must NOT be blocked.
+						entry.getValue().handle(m);
+					}
+				});
 				buffer.delete(0, l+2);
 			}
 		}
@@ -213,8 +215,8 @@ public class CommController implements DataAvailableListener {
 			cc.sendAT(new BaseATCommand("ATE0")); // TURN OFF Echo
 			cc.sendAT(new BaseATCommand("AT+IFC=1,1"));
 			cc.sendAT(new SetMessageFormatCommand(0));// Enter into SMS PDU mode
-			cc.registerNotificationHandler(1, new IncomingCallNotificationHandler());
-			cc.registerNotificationHandler(2, new NewMessageNotificationHandler());
+			cc.registerNotificationHandler("\\+CLIP\\: \"(\\d+)\"", new IncomingCallNotificationHandler());
+			cc.registerNotificationHandler("\\+CMTI\\: \"SM\",(\\d+)", new NewMessageNotificationHandler());
 
 			// process AT command from console
 			if (consoleMode) {

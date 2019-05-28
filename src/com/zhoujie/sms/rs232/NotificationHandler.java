@@ -1,5 +1,7 @@
 package com.zhoujie.sms.rs232;
 
+import java.util.regex.Matcher;
+
 public interface NotificationHandler {
-	boolean handle(String data);
+	void handle(Matcher mather);
 }

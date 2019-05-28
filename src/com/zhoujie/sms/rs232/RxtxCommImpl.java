@@ -31,7 +31,7 @@ public class RxtxCommImpl implements CommInterface,SerialPortEventListener {
 			try {
 				while (is.available() > 0) {
 					int numBytes = is.read(readBuffer, 0, 4096);
-			//		logger.info("numberofbytes:"+numBytes+"|"+Util.toHex(new String(Arrays.copyOf(readBuffer,numBytes))));
+					logger.info("Received "+numBytes+"|"+Util.toHex(new String(Arrays.copyOf(readBuffer,numBytes))));
 					listener.available(new String(Arrays.copyOf(readBuffer, numBytes)));
 				}
 			} catch (IOException e) {
