@@ -4,3 +4,7 @@ psftp.exe
 whitelist.properties
 yahoo.properties
 /bin/
+.classpath
+.project
+/target/
+/.settings/
