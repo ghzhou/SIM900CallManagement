@@ -8,3 +8,4 @@ yahoo.properties
 .project
 /target/
 /.settings/
+/.vscode/

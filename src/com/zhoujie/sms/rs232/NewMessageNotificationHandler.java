@@ -2,7 +2,6 @@ package com.zhoujie.sms.rs232;
 
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class NewMessageNotificationHandler implements NotificationHandler {
 	
