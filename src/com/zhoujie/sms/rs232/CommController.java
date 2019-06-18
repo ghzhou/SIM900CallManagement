@@ -22,7 +22,7 @@ public class CommController implements DataAvailableListener {
 		IDLE, AWAITING_RESPONSE
 	};
 
-	private final static Logger logger = Logger.getLogger(CommController.class.getName());
+	private final static Logger logger = Logger.getLogger(CommController.class.getSimpleName());
 	private static Map<String, ATCommand> supportedCommands = new HashMap<String, ATCommand>();
 	static {
 		supportedCommands.put("test", new BaseATCommand("ATI"));
@@ -199,10 +199,8 @@ public class CommController implements DataAvailableListener {
 					EmailServer.getMailer("yahoo").sendAsync(msg.toString(), "sms started", "zhou_jack@live.com");
 				}
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		} else {

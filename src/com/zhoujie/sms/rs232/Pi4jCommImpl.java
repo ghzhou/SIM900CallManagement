@@ -11,7 +11,7 @@ import com.pi4j.io.serial.SerialPortException;
 
 public class Pi4jCommImpl implements CommInterface {
 	
-	private final static Logger logger = Logger.getLogger(Pi4jCommImpl.class.getName());
+	private final static Logger logger = Logger.getLogger(Pi4jCommImpl.class.getSimpleName());
 	final Serial serial = SerialFactory.createInstance();
 	private DataAvailableListener listener;
 		

@@ -5,7 +5,7 @@ import java.util.logging.Logger;
 public class BaseATCommand implements ATCommand {
 	
 	protected String command;
-	private final static Logger logger = Logger.getLogger(BaseATCommand.class.getName());
+	private final static Logger logger = Logger.getLogger(BaseATCommand.class.getSimpleName());
 
 	public BaseATCommand(String command) {
 		super();

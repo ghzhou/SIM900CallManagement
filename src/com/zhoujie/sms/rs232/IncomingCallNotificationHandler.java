@@ -33,10 +33,10 @@ public class IncomingCallNotificationHandler implements NotificationHandler {
 		public int spamValue;
 	}
 
-	private final static Logger logger = Logger.getLogger(IncomingCallNotificationHandler.class.getName());
+	private final static Logger logger = Logger.getLogger(IncomingCallNotificationHandler.class.getSimpleName());
 	private static Set<String> numberInProcess = new HashSet<>();
 	private static Map<String, PhoneNumberInfo> pniCache = new HashMap<String, PhoneNumberInfo>();
-    private static Pattern pattern = Pattern.compile("'ºÅÂëÍ¨ÓÃ»§Êý¾Ý£º(.*£º.*)?',.*,.*,'(.*),(.*),(.*),.*'\\)",
+    private static Pattern pattern = Pattern.compile("'ï¿½ï¿½ï¿½ï¿½Í¨ï¿½Ã»ï¿½ï¿½ï¿½ï¿½Ý£ï¿½(.*ï¿½ï¿½.*)?',.*,.*,'(.*),(.*),(.*),.*'\\)",
     		Pattern.MULTILINE);
 	
 	static {
@@ -135,8 +135,8 @@ public class IncomingCallNotificationHandler implements NotificationHandler {
 				try (CloseableHttpResponse respone = httpclient.execute(httpGet)){
 				    HttpEntity entity = respone.getEntity();
 				    /*
-				     *   'ºÅÂëÍ¨ÓÃ»§Êý¾Ý£ºÉ§ÈÅµç»°£º2','0','5','ÉÏº£,ÉÏº£,ÖÐ¹úµçÐÅ,021')
-				     *   'ºÅÂëÍ¨ÓÃ»§Êý¾Ý£º','0','5','ÉÏº£,ÉÏº£,ÖÐ¹úÁªÍ¨,021')        
+				     *   'ï¿½ï¿½ï¿½ï¿½Í¨ï¿½Ã»ï¿½ï¿½ï¿½ï¿½Ý£ï¿½É§ï¿½Åµç»°ï¿½ï¿½2','0','5','ï¿½Ïºï¿½,ï¿½Ïºï¿½,ï¿½Ð¹ï¿½ï¿½ï¿½ï¿½ï¿½,021')
+				     *   'ï¿½ï¿½ï¿½ï¿½Í¨ï¿½Ã»ï¿½ï¿½ï¿½ï¿½Ý£ï¿½','0','5','ï¿½Ïºï¿½,ï¿½Ïºï¿½,ï¿½Ð¹ï¿½ï¿½ï¿½Í¨,021')        
 				     */
 				    String html = EntityUtils.toString(entity, "UTF8");
 				    Matcher m = pattern.matcher(html);
@@ -147,12 +147,12 @@ public class IncomingCallNotificationHandler implements NotificationHandler {
 						pni.from = m.group(2) + m.group(3);
 						pni.operator=m.group(4);
 						pni.spamValue = 0;
-						if (pni.tag.contains("ÖÐ½é")
-								|| pni.tag.contains("ÍÆÏú")
-								|| pni.tag.contains("É§ÈÅ")
+						if (pni.tag.contains("ï¿½Ð½ï¿½")
+								|| pni.tag.contains("ï¿½ï¿½ï¿½ï¿½")
+								|| pni.tag.contains("É§ï¿½ï¿½")
 								|| pni.tag.contains("Õ©Æ­")) {
 							pni.spamValue++;
-							if (pni.from.contains("ÉÏº£")) {
+							if (pni.from.contains("ï¿½Ïºï¿½")) {
 								pni.spamValue++;
 							}
 						}

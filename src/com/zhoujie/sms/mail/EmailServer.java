@@ -16,7 +16,7 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
 public class EmailServer {
-	private final static Logger logger = Logger.getLogger(EmailServer.class.getName());
+	private final static Logger logger = Logger.getLogger(EmailServer.class.getSimpleName());
 	private static Map<String, EmailServer> cache = new HashMap<>();
 	private Properties props;
 

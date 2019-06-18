@@ -18,7 +18,7 @@ import java.util.logging.Logger;
 
 public class RxtxCommImpl implements CommInterface,SerialPortEventListener {
 	
-	private final static Logger logger = Logger.getLogger(RxtxCommImpl.class.getName());
+	private final static Logger logger = Logger.getLogger(RxtxCommImpl.class.getSimpleName());
 	private DataAvailableListener listener;
 	private SerialPort sp;
 	private InputStream is;
@@ -50,10 +50,8 @@ public class RxtxCommImpl implements CommInterface,SerialPortEventListener {
 			os.write(10);
 			os.flush();
 		} catch (UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

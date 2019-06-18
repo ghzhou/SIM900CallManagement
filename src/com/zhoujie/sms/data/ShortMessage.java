@@ -8,7 +8,7 @@ import java.util.logging.Logger;
 
 public class ShortMessage {
 
-	private final static Logger logger = Logger.getLogger(ShortMessage.class.getName());
+	private final static Logger logger = Logger.getLogger(ShortMessage.class.getSimpleName());
 	private static Map<String, ShortMessage> messagesHolder = new HashMap<>();
 	
 	private String sender;

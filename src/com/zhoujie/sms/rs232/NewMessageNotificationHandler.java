@@ -5,7 +5,7 @@ import java.util.regex.Matcher;
 
 public class NewMessageNotificationHandler implements NotificationHandler {
 	
-	private final static Logger logger = Logger.getLogger(NewMessageNotificationHandler.class.getName());
+	private final static Logger logger = Logger.getLogger(NewMessageNotificationHandler.class.getSimpleName());
 
 	@Override
 	public void handle(Matcher m) {

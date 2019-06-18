@@ -10,7 +10,7 @@ import com.zhoujie.sms.mail.EmailServer;
 
 public class RetrieveAllMessagesCommand extends BaseATCommand {
 	
-	private final static Logger logger = Logger.getLogger(RetrieveAllMessagesCommand.class.getName());
+	private final static Logger logger = Logger.getLogger(RetrieveAllMessagesCommand.class.getSimpleName());
 
 	public RetrieveAllMessagesCommand() {
 		super("AT+CMGL=4");

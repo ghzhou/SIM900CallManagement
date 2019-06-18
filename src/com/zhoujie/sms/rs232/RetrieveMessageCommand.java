@@ -13,7 +13,7 @@ import com.zhoujie.sms.mail.EmailServer;
 public class RetrieveMessageCommand extends BaseATCommand {
 	
 	private int msgIndex;
-	private final static Logger logger = Logger.getLogger(RetrieveMessageCommand.class.getName());
+	private final static Logger logger = Logger.getLogger(RetrieveMessageCommand.class.getSimpleName());
 //	private static ShortMessage sm = new ShortMessage();
 	
 
